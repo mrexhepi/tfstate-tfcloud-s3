@@ -60,4 +60,9 @@ jobs:
        
            - name: Upload statefile to S3
              run: |
-               aws s3 cp terraform.tfstate s3://$AWS_S3_BUCKET/terraform.tfstate             
+               aws s3 cp terraform.tfstate s3://$AWS_S3_BUCKET/terraform.tfstate     
+
+           - name: Delete terraform statefile from github actions runtime
+             run: |
+                 rm -r terraform.tfstate
+                 ls -l
