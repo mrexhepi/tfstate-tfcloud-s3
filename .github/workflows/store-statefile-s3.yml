@@ -1,0 +1,57 @@
+name: Copy terraform cloud statefile to S3 bukcet
+env:
+  AWS_S3_BUCKET: terraform-statefile-bucket-mrexhepi
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+
+    check-terraform-apply-save-statefile-s3:
+        runs-on: ubuntu-latest
+        steps:
+           - name: Checkout code
+             uses: actions/checkout@v3
+      
+           - name: Install jq
+             run: sudo apt-get install jq
+
+           - name: Check last run status and wait if necessary
+             run: |
+               while true; do
+                 LAST_RUN_STATUS=$(curl -s \
+                   --header "Authorization: Bearer ${{ secrets.TERRAFORM_CLOUD_TOKEN }}" \
+                   "https://app.terraform.io/api/v2/workspaces/${{ secrets.TERRAFORM_WORKSPACE_ID }}/runs?page%5Bsize%5D=1" \
+                   | jq -r '.data[0].attributes.status')
+                 if [[ "$LAST_RUN_STATUS" == "applied" ]]; then
+                   echo "Last run applied, proceeding..."
+                   break                                     
+                 else
+                   echo "Last run did not apply, sleep for 20 seconds before retry...run status is $LAST_RUN_STATUS"
+                   sleep 20
+                 fi
+               done    
+
+           - name: Setup AWS credentials
+             uses: aws-actions/configure-aws-credentials@v1
+             with:
+                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                 aws-region: us-east-1
+
+           - name: Setup Terraform
+             uses: hashicorp/setup-terraform@v2
+             with: 
+              cli_config_credentials_token: ${{ secrets.TERRAFORM_CLOUD_TOKEN }}       
+
+           - name: Init terraform prj
+             run: terraform init                  
+
+           - name: Download statefile
+             run: terraform state pull > terraform.tfstate
+       
+           - name: Upload statefile to S3
+             run: |
+               aws s3 cp terraform.tfstate s3://$AWS_S3_BUCKET/terraform.tfstate             
