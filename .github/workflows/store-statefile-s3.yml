@@ -23,7 +23,7 @@ jobs:
                while true; do
                  LAST_RUN_STATUS=$(curl -s \
                    --header "Authorization: Bearer ${{ secrets.TERRAFORM_CLOUD_TOKEN }}" \
-                   "https://app.terraform.io/api/v2/workspaces/${{ secrets.TERRAFORM_WORKSPACE_ID }}/runs?page%5Bsize%5D=1" \
+                   "https://app.terraform.io/api/v2/workspaces/${{ secrets.TERRAFORM_WORKSPACE_ID }}/runs" \
                    | jq -r '.data[0].attributes.status')
                  if [[ "$LAST_RUN_STATUS" == "applied" ]]; then
                    echo "Last run applied, proceeding..."
