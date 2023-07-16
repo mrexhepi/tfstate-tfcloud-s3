@@ -27,7 +27,10 @@ jobs:
                    | jq -r '.data[0].attributes.status')
                  if [[ "$LAST_RUN_STATUS" == "applied" ]]; then
                    echo "Last run applied, proceeding..."
-                   break                                     
+                   break    
+                 elif [[ "$LAST_RUN_STATUS" == "errored" ]]; then
+                   echo "Terraform apply errored"
+                   exit 1                                                      
                  else
                    echo "Last run did not apply, sleep for 20 seconds before retry...run status is $LAST_RUN_STATUS"
                    sleep 20
