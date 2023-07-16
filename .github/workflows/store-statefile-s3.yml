@@ -64,5 +64,5 @@ jobs:
 
            - name: Delete terraform statefile from github actions runtime
              run: |
-                 rm -r terraform.tfstate
-                 ls -l
+                 rm -f terraform.tfstate
+
