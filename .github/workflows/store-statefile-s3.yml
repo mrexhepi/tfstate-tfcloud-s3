@@ -31,6 +31,15 @@ jobs:
                  elif [[ "$LAST_RUN_STATUS" == "errored" ]]; then
                    echo "Terraform apply errored"
                    exit 1   
+                 elif [[ "$LAST_RUN_STATUS" == "discarded" ]]; then
+                   echo "Terraform run has been discarded"
+                   exit 1
+                 elif [[ "$LAST_RUN_STATUS" == "canceled" ]]; then
+                   echo "Terraform run has been canceled"
+                   exit 1      
+                 elif [[ "$LAST_RUN_STATUS" == "force_canceled" ]]; then
+                   echo "	A workspace admin forcefully canceled the terraform run"
+                   exit 1                                                       
                  elif [[ "$LAST_RUN_STATUS" == "planned_and_finished" ]]; then
                    echo "No changes were found, Terraform Apply will not run"
                    exit 0                                                                         
